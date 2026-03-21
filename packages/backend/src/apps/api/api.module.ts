@@ -9,6 +9,7 @@ import { RolesController } from './identity-access/roles.controller';
 import { StudentsController } from './academic/students.controller';
 import { SchedulesController } from './academic/schedules.controller';
 import { CoursesController } from './academic/courses.controller';
+import { ProgramsController } from './academic/programs.controller';
 
 @Module({
   imports: [IdentityAccessModule, AcademicModule],
@@ -19,6 +20,7 @@ import { CoursesController } from './academic/courses.controller';
     StudentsController,
     SchedulesController,
     CoursesController,
+    ProgramsController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
