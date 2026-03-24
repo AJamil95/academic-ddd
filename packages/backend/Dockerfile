@@ -19,9 +19,13 @@ RUN npm run build -w backend
 
 WORKDIR /app/packages/backend
 
+# Copiar y dar permisos al script de entrada
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
 ENV NODE_ENV=production
 EXPOSE 3000
 
 # Migraciones: opcional con script de entrada o variable RUN_MIGRATIONS
 # La app lee TYPEORM_* y JWT_SECRET por env; no requiere archivo .env
-CMD ["node", "dist/main.js"]
+CMD ["./entrypoint.sh"]
