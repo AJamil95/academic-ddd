@@ -19,8 +19,7 @@ RUN npm run build -w backend
 
 WORKDIR /app/packages/backend
 
-# Copiar y dar permisos al script de entrada
-COPY entrypoint.sh ./
+# Dar permisos al script de entrada (ya copiado con el folder)
 RUN chmod +x entrypoint.sh
 
 ENV NODE_ENV=production
