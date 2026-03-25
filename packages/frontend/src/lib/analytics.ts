@@ -15,28 +15,23 @@ declare global {
 export function initAnalytics() {
   if (typeof window === 'undefined') return;
 
-  if (GA_MEASUREMENT_ID && !window.gtag) {
+  if (GA_MEASUREMENT_ID) {
     window.dataLayer = window.dataLayer || [];
-    function gtag(...args: any[]) {
-      window.dataLayer!.push(args);
+    function gtag() {
+      window.dataLayer!.push(arguments);
     }
     window.gtag = gtag;
 
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-    document.head.appendChild(script);
-
-    gtag('js', new Date());
-    gtag('config', GA_MEASUREMENT_ID, {
-      send_page_view: false,
-    });
-    
-    (window as any).__ga_debug = {
-      id: GA_MEASUREMENT_ID,
-      initialized: true,
-      dataLayer: window.dataLayer,
+    script.onload = () => {
+      window.gtag?.('js', new Date());
+      window.gtag?.('config', GA_MEASUREMENT_ID, {
+        send_page_view: false,
+      });
     };
+    document.head.appendChild(script);
   }
 
   if (MIXPANEL_TOKEN && !mixpanelInited) {
@@ -55,7 +50,6 @@ export function trackPageView(path: string, title?: string) {
     window.gtag('event', 'page_view', {
       page_path: path,
       page_title: title,
-      send_to: GA_MEASUREMENT_ID,
     });
   }
 
@@ -76,7 +70,6 @@ export function trackEvent(
   if (GA_MEASUREMENT_ID && window.gtag) {
     window.gtag('event', action, {
       ...params,
-      send_to: GA_MEASUREMENT_ID,
     });
   }
 
@@ -84,15 +77,3 @@ export function trackEvent(
     mixpanel.track(action, params ?? {});
   }
 }
-
-// Debug helper: type window.__ga_debug in console to see GA status
-export function getGADebugInfo() {
-  if ((window as any).__ga_debug) {
-    return (window as any).__ga_debug;
-  }
-  return {
-    status: 'GA not initialized',
-    gtag: typeof window !== 'undefined' && window.gtag ? 'ready' : 'not found',
-  };
-}
-
