@@ -31,6 +31,12 @@ export function initAnalytics() {
     gtag('config', GA_MEASUREMENT_ID, {
       send_page_view: false,
     });
+    
+    (window as any).__ga_debug = {
+      id: GA_MEASUREMENT_ID,
+      initialized: true,
+      dataLayer: window.dataLayer,
+    };
   }
 
   if (MIXPANEL_TOKEN && !mixpanelInited) {
@@ -77,5 +83,16 @@ export function trackEvent(
   if (MIXPANEL_TOKEN && mixpanelInited) {
     mixpanel.track(action, params ?? {});
   }
+}
+
+// Debug helper: type window.__ga_debug in console to see GA status
+export function getGADebugInfo() {
+  if ((window as any).__ga_debug) {
+    return (window as any).__ga_debug;
+  }
+  return {
+    status: 'GA not initialized',
+    gtag: typeof window !== 'undefined' && window.gtag ? 'ready' : 'not found',
+  };
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { trackEvent, trackPageView } from "../../../lib/analytics";
 import { MainLayout } from "../../templates/MainLayout";
 import { Button } from "../../atoms/Button";
 import { Input } from "../../atoms/Input";
@@ -18,6 +19,12 @@ export function EditPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      trackPageView(`/horarios/${id}/editar`, "Editar Horario");
+    }
+  }, [id]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -80,9 +87,19 @@ export function EditPage() {
 
     setLoading(true);
     try {
+      trackEvent("schedule_edit_click", {
+        schedule_id: id,
+        course_id: courseId,
+        day_of_week: dayOfWeek,
+      });
       await updateSchedule(id, {
         courseId: courseId.trim(),
         slot: dayOfWeek.trim() + " " + startTime.trim() + "-" + endTime.trim(),
+      });
+      trackEvent("schedule_updated", {
+        schedule_id: id,
+        course_id: courseId,
+        day_of_week: dayOfWeek,
       });
       navigate("/horarios", { state: { updated: true } });
     } catch (err) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSchedule } from "../../../services/scheduleService";
 import { getCourses, type Course } from "../../../services/courseService";
+import { trackEvent, trackPageView } from "../../../lib/analytics";
 import { MainLayout } from "../../templates/MainLayout";
 import { Input } from "../../atoms/Input";
 import { Button } from "../../atoms/Button";
@@ -16,6 +17,10 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackPageView("/horarios/registro", "Agregar Horario");
+  }, []);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -55,9 +60,17 @@ export function RegisterPage() {
 
     setLoading(true);
     try {
+      trackEvent("schedule_create_click", {
+        course_id: courseId,
+        day_of_week: dayOfWeek,
+      });
       await createSchedule({
         courseId: courseId.trim(),
         slot: dayOfWeek.trim() + " " + startTime.trim() + "-" + endTime.trim(),
+      });
+      trackEvent("schedule_created", {
+        course_id: courseId,
+        day_of_week: dayOfWeek,
       });
       navigate("/horarios", { state: { registered: true } });
     } catch (err) {

@@ -49,6 +49,12 @@ export function HorariosPage() {
   const loadSchedules = useCallback(async () => {
     setLoading(true);
     try {
+      trackEvent("schedule_load", {
+        page,
+        page_size: pageSize,
+        sort_by: sortKey ?? "createdAt",
+        sort_order: sortDir,
+      });
       const res = await getSchedulesPaginated({
         page,
         pageSize,
@@ -76,17 +82,30 @@ export function HorariosPage() {
         `¿Eliminar a ${schedule.courseName} ${schedule.slot}? Esta acción no se puede deshacer.`,
       )
     ) {
+      trackEvent("schedule_delete_cancelled", {
+        schedule_id: schedule.id,
+      });
       return;
     }
     setError(null);
     setDeletingId(schedule.id);
     try {
-      await deleteSchedule(schedule.id);
-      trackEvent("schedule_delete", {
+      trackEvent("schedule_delete_start", {
         schedule_id: schedule.id,
+        course_name: schedule.courseName,
+        slot: schedule.slot,
+      });
+      await deleteSchedule(schedule.id);
+      trackEvent("schedule_deleted", {
+        schedule_id: schedule.id,
+        course_name: schedule.courseName,
       });
       await loadSchedules();
     } catch (err) {
+      trackEvent("schedule_delete_error", {
+        schedule_id: schedule.id,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
       setError(err instanceof Error ? err.message : "Error al eliminar");
     } finally {
       setDeletingId(null);
